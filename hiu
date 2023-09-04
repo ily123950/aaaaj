@@ -1,24 +1,30 @@
 -- Create a reference to Players service
 local Players = game:GetService("Players")
 
--- Function to evaluate and send the result to chat with a delay
+-- Function to evaluate and send the result or error to chat with a delay
 local function EvaluateAndChat(expression)
-    local success, result = pcall(function()
+    local success, resultOrError = pcall(function()
         -- Use loadstring to evaluate the expression
         local func = loadstring("return " .. expression)
         if func then
             return func()
         else
-            return "Invalid expression"
+            error("Invalid expression")
         end
     end)
 
     -- Delay for 0.5 seconds
     wait(0.5)
 
-    -- Send the result to chat
-    local message = "Result: " .. tostring(result)
-    game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
+    if success then
+        -- Send the result to chat
+        local message = "Result: " .. tostring(resultOrError)
+        game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
+    else
+        -- Send the error message to chat
+        local errorMessage = "Error: " .. resultOrError -- Display the captured error message
+        game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(errorMessage, "All")
+    end
 end
 
 -- Function to handle chat messages
