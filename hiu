@@ -1,0 +1,35 @@
+-- Create a reference to Players service
+local Players = game:GetService("Players")
+
+-- Function to evaluate and send the result to chat with a delay
+local function EvaluateAndChat(expression)
+    local success, result = pcall(function()
+        -- Use loadstring to evaluate the expression
+        local func = loadstring("return " .. expression)
+        if func then
+            return func()
+        else
+            return "Invalid expression"
+        end
+    end)
+
+    -- Delay for 0.5 seconds
+    wait(0.5)
+
+    -- Send the result to chat
+    local message = "Result: " .. tostring(result)
+    game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
+end
+
+-- Function to handle chat messages
+function HandleChatMessage(message)
+    if string.sub(message, 1, 7) == "!count " then
+        local expression = string.sub(message, 8, 127) -- Extract up to 120 characters of Lua code after "!count "
+        EvaluateAndChat(expression)
+    end
+end
+
+-- Connect the chat event for the local player
+Players.LocalPlayer.Chatted:Connect(function(message)
+    HandleChatMessage(message)
+end)
